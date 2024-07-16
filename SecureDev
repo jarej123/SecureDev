@@ -1,0 +1,56 @@
+SecureDev
+import os
+import subprocess
+
+# Define project structure and files
+project_name = "secure_flask_app"
+dirs = [
+    project_name,
+    os.path.join(project_name, "app"),
+    os.path.join(project_name, "app", "templates"),
+    os.path.join(project_name, "app", "static"),
+    os.path.join(project_name, "tests"),
+    os.path.join(project_name, "instance")
+]
+files = {
+    os.path.join(project_name, "README.md"): "# Secure Flask App\n\nA secure Flask web application.",
+    os.path.join(project_name, "requirements.txt"): "Flask==2.0.1\nFlask-WTF==0.14.3\nFlask-Talisman==0.7.0\npython-dotenv==0.20.0",
+    os.path.join(project_name, ".gitignore"): "__pycache__/\n*.pyc\ninstance/\n.env",
+    os.path.join(project_name, "run.py"): "from app import create_app\n\napp = create_app()\n\nif __name__ == '__main__':\n    app.run(debug=True, ssl_context=('cert.pem', 'key.pem'))",
+    os.path.join(project_name, "app", "__init__.py"): "from flask import Flask\nfrom flask_wtf.csrf import CSRFProtect\nfrom flask_talisman import Talisman\nfrom dotenv import load_dotenv\nimport os\n\nload_dotenv()\n\ncsrf = CSRFProtect()\ntalisman = Talisman()\n\n\ndef create_app():\n    app = Flask(__name__)\n    app.config.from_object('config.Config')\n\n    csrf.init_app(app)\n    talisman.init_app(app)\n\n    @app.route('/')\n    def home():\n        return 'Hello, Secure Flask!'\n\n    return app",
+    os.path.join(project_name, "app", "templates", "index.html"): "<!DOCTYPE html>\n<html lang='en'>\n<head>\n    <meta charset='UTF-8'>\n    <meta name='viewport' content='width=device-width, initial-scale=1.0'>\n    <title>Secure Flask App</title>\n</head>\n<body>\n    <h1>Hello, Secure Flask!</h1>\n</body>\n</html>",
+    os.path.join(project_name, "app", "static", "style.css"): "body { font-family: Arial, sans-serif; }",
+    os.path.join(project_name, "tests", "test_app.py"): "import unittest\nfrom app import create_app\n\n\nclass BasicTestCase(unittest.TestCase):\n    def setUp(self):\n        self.app = create_app()\n        self.client = self.app.test_client()\n\n    def test_home(self):\n        response = self.client.get('/')\n        self.assertEqual(response.status_code, 200)\n        self.assertIn(b'Hello, Secure Flask!', response.data)\n\n\nif __name__ == '__main__':\n    unittest.main()",
+    os.path.join(project_name, "instance", ".gitkeep"): "",
+    os.path.join(project_name, "config.py"): "import os\n\nclass Config:\n    SECRET_KEY = os.getenv('SECRET_KEY', 'you-will-never-guess')\n    SESSION_COOKIE_SECURE = True\n    REMEMBER_COOKIE_SECURE = True\n    WTF_CSRF_ENABLED = True\n    WTF_CSRF_SSL_STRICT = True",
+    os.path.join(project_name, ".env"): "SECRET_KEY=you-will-never-guess"
+}
+
+# Function to create files with initial content
+def create_file(filepath, content=""):
+    with open(filepath, 'w') as file:
+        file.write(content)
+
+# Create directories and files
+def create_project_structure():
+    for dir in dirs:
+        os.makedirs(dir, exist_ok=True)
+
+    for filepath, content in files.items():
+        create_file(filepath, content)
+
+    print(f"Project structure created under '{project_name}' directory.")
+
+# Initialize Git repository, add, commit, and push to GitHub
+def initialize_git_repo():
+    os.chdir(project_name)
+    subprocess.run(["git", "init"])
+    subprocess.run(["git", "add", "."])
+    subprocess.run(["git", "commit", "-m", "Initial commit"])
+    # Replace the URL with your GitHub repository URL
+    subprocess.run(["git", "remote", "add", "origin", "https://github.com/your-username/your-repository.git"])
+    subprocess.run(["git", "push", "-u", "origin", "master"])
+
+if __name__ == "__main__":
+    create_project_structure()
+    initialize_git_repo()
